@@ -1,0 +1,46 @@
+class Pila:
+    def __init__(self):
+        self.items = []  # Usamos una lista para simular la pila
+
+    def push(self, item):
+        """Añadir un elemento al final de la lista"""
+        self.items.append(item)
+
+    def pop(self):
+        """Eliminar y devolver el último elemento de la pila"""
+        if not self.is_empty():
+            return self.items.pop()
+        else:
+            raise IndexError("Pila vacía")
+
+    def peek(self):
+        """Obtener el último elemento sin eliminarlo"""
+        if not self.is_empty():
+            return self.items[-1]
+        else:
+            raise IndexError("Pila vacía")
+
+    def is_empty(self):
+        """Comprobar si la pila está vacía"""
+        return len(self.items) == 0
+
+    def size(self):
+        """Obtener el tamaño de la pila"""
+        return len(self.items)
+
+# Ejemplo de uso
+if __name__ == "__main__":
+    pila = Pila()
+
+    # Operaciones de pila
+    pila.push(10)
+    pila.push(20)
+    pila.push(30)
+
+    print("Último elemento (peek):", pila.peek())  # 30
+    print("Tamaño de la pila:", pila.size())  # 3
+
+    print("Elemento eliminado (pop):", pila.pop())  # 30
+    print("Tamaño de la pila después del pop:", pila.size())  # 2
+
+    print("¿La pila está vacía?", pila.is_empty())  # False
