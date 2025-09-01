@@ -20,10 +20,9 @@ class Matriz:
 
 # Ejemplo de uso
 if __name__ == "__main__":
-    matriz = Matriz(4, 3)
+    matriz = Matriz(3, 3)
     
     valores = [
-        [0, 23, 'E'],
         [2, 0, 1],
         [0, -1, 0],
         [0, -2, 0],

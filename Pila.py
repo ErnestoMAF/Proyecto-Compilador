@@ -13,7 +13,7 @@ class Pila:
         else:
             raise IndexError("Pila vacía")
 
-    def peek(self):
+    def top(self):
         """Obtener el último elemento sin eliminarlo"""
         if not self.is_empty():
             return self.items[-1]
@@ -37,10 +37,29 @@ if __name__ == "__main__":
     pila.push(20)
     pila.push(30)
 
-    print("Último elemento (peek):", pila.peek())  # 30
+    print("Último elemento (top):", pila.top())  # 30
     print("Tamaño de la pila:", pila.size())  # 3
 
     print("Elemento eliminado (pop):", pila.pop())  # 30
     print("Tamaño de la pila después del pop:", pila.size())  # 2
 
     print("¿La pila está vacía?", pila.is_empty())  # False
+
+class ElementoPila:
+    def __init__(self, valor):
+        self.valor = valor
+    
+    def __str__(self):
+        return str(self.valor)
+
+class Terminal(ElementoPila):
+    def __init__(self, valor):
+        super().__init__(valor)
+
+class NoTerminal(ElementoPila):
+    def __init__(self, valor):
+        super().__init__(valor)
+
+class Estado(ElementoPila):
+    def __init__(self, valor):
+        super().__init__(valor)
