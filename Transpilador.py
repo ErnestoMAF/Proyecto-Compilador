@@ -3,21 +3,25 @@ from AnalizadorSintacticoLR1 import *
 from Matriz import *
 
 if __name__ == "__main__":
-    cadena = input("Dame la cadena: ")
+    #cadena = input("Dame la cadena: ")
+    cadena = """    int x;
+                    float y, z;
+                    int main() {
+                        x = 10;
+                        if (x) { y = 3; }
+                        return x;
+                    }
+            """
+
     analizador_lexico = AnalizadorLexico(cadena)
     
     if analizador_lexico.error:
         print(analizador_lexico.error)
     else:
         # Configurar matriz (igual que antes)
-        matriz = Matriz(5, 4)
-        valores = [ [2,0,0,1], 
-                    [0,0,-1,0],
-                    [0,3,-3,0],
-                    [2,0,0,4],
-                    [0,0,-2,0]]
-        matriz.llenar(valores)
-        
+        matriz = Matriz()
+        matriz.llenar_desde_csv('rules.csv')
+
         tokens = analizador_lexico.obtener_todos_tokens()
         simbolos = analizador_lexico.obtener_todos_simbolos()
 
