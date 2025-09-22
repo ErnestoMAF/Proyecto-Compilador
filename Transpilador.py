@@ -28,7 +28,6 @@ if __name__ == "__main__":
         analizador_sintactico = AnalizadorSintactico(matriz, tokens, simbolos)
         try:
             pasos = analizador_sintactico.analizar()
-            analizador_sintactico.imprimir_pasos()
             print("Cadena aceptada")
         except SyntaxError as e:
             print("Error de sintaxis:", e)
