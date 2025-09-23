@@ -41,6 +41,49 @@ Este proyecto contiene:
   - Imprime pasos con PILA, ENTRADA, LOOKAHEAD y ACCIÓN.
   - Aplica reducciones consultando GOTO y apila NoTerminal + nuevo estado.
 
+## Formato de Salida
+
+El sistema proporciona salida formateada que incluye diferentes tipos de acciones:
+
+### Desplazamiento (Shift)
+
+```
+PASO 1
+----------------------------------------
+    PILA:      [S0]
+    ENTRADA:   int x ; float y , z ; int main ( ) { x = 10 ; if ( x ) { y = 3 ; } return x ; } $
+    OBJETIVO: int (token: 4)
+    ACCIÓN:     🔄 DESPLAZAMIENTO → S5
+```
+
+### Reducción (Reduce)
+
+```
+PASO 8
+----------------------------------------
+    PILA:      [S0 int S5 x S17]
+    ENTRADA:   ; float y , z ; int main ( ) { x = 10 ; if ( x ) { y = 3 ; } return x ; } $
+    OBJETIVO: ; (token: 12)
+    ACCIÓN:     🔽 REDUCIR R35
+            *Regla aplicada: R35 → Termino(42)
+            *Elementos a eliminar: 2 (símbolos y estados)
+            *Estado tras reducir: S5
+            * GOTO: Apilando 'Termino' y S23
+```
+
+### Aceptación
+
+```
+PASO 47
+----------------------------------------
+    PILA:      [S0 programa S1]
+    ENTRADA:   $
+    OBJETIVO: $ (token: 23)
+    ACCIÓN:     ✅ ACEPTAR
+================================================================================
+ANÁLISIS COMPLETADO
+La cadena de entrada ES SINTÁCTICAMENTE VÁLIDA
+```
 ---
 
 ## Uso rápido
