@@ -4,16 +4,9 @@ from Matriz import *
 
 if __name__ == "__main__":
     #cadena = input("Dame la cadena: ")
-    cadena = """    int x;
-                    float y, z;
-                    int main() {
-                        x = 10;
-                        if (x) { y = 3; }
-                        return x;
-                    }
+    cadena = """    int x = 5;
             """
-    cadena = "int x=4;"
-
+    print(f"CADENA: {cadena}")
     analizador_lexico = AnalizadorLexico(cadena)
     
     if analizador_lexico.error:
@@ -21,11 +14,15 @@ if __name__ == "__main__":
     else:
         tokens = analizador_lexico.obtener_todos_tokens()
         simbolos = analizador_lexico.obtener_todos_simbolos()
+        print(f"\nTOKENS IDENTIFICADOS: {len(tokens)} tokens")
+        print("-"*80)
+        for i, (token, simbolo) in enumerate(zip(tokens, simbolos)):
+            print(f"  {i+1:2d}. Token: {token:2d} → '{simbolo}'")
 
         try:
             matriz = Matriz()
             matriz.llenar_desde_csv('rules.csv')
-            print(f"✅ Matriz LR(1) cargada exitosamente: {matriz.filas} estados x {matriz.columnas} símbolos")
+            print(f"\nMatriz LR(1) cargada: {matriz.filas} estados x {matriz.columnas} símbolos")
 
             analizador_sintactico = AnalizadorSintactico(matriz, tokens, simbolos)
             pasos = analizador_sintactico.analizar()

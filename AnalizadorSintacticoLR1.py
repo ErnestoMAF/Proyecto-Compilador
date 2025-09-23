@@ -3,11 +3,11 @@ from Matriz import *
 
 class AnalizadorSintactico:
     def __init__(self, matriz_lr1, lista_tokens, lista_simbolos):
-        self.matriz_acciones_goto = matriz_lr1
+        self.matriz_acciones = matriz_lr1
         self.cadena_tokens = list(lista_tokens) + [23]   # token 23 = $
         self.cadena_simbolos = list(lista_simbolos) + ['$']
         self.indice_lectura = 0
-        self.registro_pasos = []  # para depuración
+        self.registro_pasos = []
 
         # Inicializar la pila con el estado 0
         self.pila_estados = Pila()
@@ -136,12 +136,10 @@ class AnalizadorSintactico:
         print("-" * 40)
         print(f"    PILA:      {self.obtener_representacion_pila()}")
         print(f"    ENTRADA:    {self.obtener_entrada_restante()}")
-        print(f"    LOOKAHEAD: {simbolo_actual} (token: {token_actual})")
+        print(f"    OBJETIVO: {simbolo_actual} (token: {token_actual})")
         print(f"    ACCIÓN:     {accion_descripcion}")
 
     def analizar(self):
-        """Método principal de análisis sintáctico LR(1)"""
-        print("🚀 INICIANDO ANÁLISIS SINTÁCTICO LR(1)")
         self.imprimir_encabezado_tabla()
 
         while True:
@@ -155,9 +153,8 @@ class AnalizadorSintactico:
             token_actual = self.cadena_tokens[self.indice_lectura]
             simbolo_actual = self.cadena_simbolos[self.indice_lectura]
 
-            # Consultar la acción en la matriz
             try:
-                accion = self.matriz_acciones_goto.consultar(estado_actual, token_actual)
+                accion = self.matriz_acciones.consultar(estado_actual, token_actual)
             except IndexError as e:
                 print(f"\n❌ ERROR: No se puede consultar matriz en posición ({estado_actual}, {token_actual}): {e}")
                 return False
@@ -225,9 +222,9 @@ class AnalizadorSintactico:
                 estado_anterior = self.pila_estados.top().valor
                 print(f"            *Estado tras reducir: S{estado_anterior}")
 
-                # Consultar GOTO
+                # Consultar matriz
                 try:
-                    nuevo_estado = self.matriz_acciones_goto.consultar(estado_anterior, lado_izquierdo)
+                    nuevo_estado = self.matriz_acciones.consultar(estado_anterior, lado_izquierdo)
                 except IndexError as e:
                     print(f"\n❌ ERROR: No se puede consultar GOTO en posición ({estado_anterior}, {lado_izquierdo}): {e}")
                     return False
