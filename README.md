@@ -43,12 +43,12 @@ Este proyecto contiene:
     - `pila_estados`: para manejar el autómata LR(1).
     - `pila_semantica`: para construir el árbol sintáctico.
   - Consulta acción:  
-    - >0 → *shift (desplazamiento)*  
+    - mayor a 0 → *desplazamiento*  
     - 0 → *error sintáctico*  
     - -1 → *aceptar*  
-    - <-1 → *reducción (R#)*  
-  - Durante las reducciones, toma los hijos de la pila semántica y crea nodos `Nodo(etiqueta=NoTerminal)` para formar el árbol.
-  - Al final, genera automáticamente **`arbol_interactivo.html`** con el árbol sintáctico visual.
+    - menor a -1 → *reducción (R#)*  
+  - Durante las reducciones, toma los hijos de la pila semántica y crea nodos `Nodo(etiqueta=NoTerminal)` para formar el árbol sintáctico.
+  - Al final, genera automáticamente un archiv **`html`** con el árbol sintáctico visual.
 
 ---
 
@@ -98,8 +98,11 @@ La cadena de entrada ES SINTÁCTICAMENTE VÁLIDA
 ```
 
 ### Gráfico (Árbol Sintáctico)
+
+#### Ejemplo 1
 <img width="480" height="681" alt="image" src="https://github.com/user-attachments/assets/08a92864-ad22-49bf-b0e0-198bd285abd0" />
 
+#### Ejemplo 2
 <img width="954" height="830" alt="image" src="https://github.com/user-attachments/assets/b9c35d1a-b2d4-4a03-9c33-3cdccf1fead3" />
 
 
