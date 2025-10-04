@@ -103,7 +103,7 @@ def exportar_arbol_pyvis(raiz, nombre_salida='arbol_interactivo.html'):
     agregar_nodo(raiz, None)
 
     # Crear red de pyvis con disposición jerárquica
-    net = Network(height='1000px', width='100%', directed=True, layout=True)
+    net = Network(height='1200px', width='100%', directed=True, layout=True)
     net.from_nx(G)
 
     # Asignar etiquetas y colores personalizados
