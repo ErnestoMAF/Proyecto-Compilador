@@ -1,10 +1,11 @@
-from Pila import *   # Importa Pila, Estado, Terminal, NoTerminal
+from Pila import * 
 from Matriz import *
+from ArbolSintactico import exportar_arbol_pyvis, Nodo 
 
 class AnalizadorSintactico:
     def __init__(self, matriz_lr1, lista_tokens, lista_simbolos):
         self.matriz_acciones = matriz_lr1
-        self.cadena_tokens = list(lista_tokens) + [23]   # token 23 = $
+        self.cadena_tokens = list(lista_tokens) + [23] # token 23 = $
         self.cadena_simbolos = list(lista_simbolos) + ['$']
         self.indice_lectura = 0
         self.registro_pasos = []
@@ -13,7 +14,9 @@ class AnalizadorSintactico:
         self.pila_estados = Pila()
         self.pila_estados.push(Estado(0))
 
-        # Mapeo de no terminales para nombres más descriptivos
+        # Pila semántica para construir el árbol
+        self.pila_semantica = Pila()
+
         self.diccionario_no_terminales = {
             24: "programa",
             25: "Definiciones", 
@@ -95,7 +98,6 @@ class AnalizadorSintactico:
             52: (45, 1)   # Expresion -> Termino
         }
 
-        # Inicializar contador de pasos para la tabla
         self.numero_paso = 0
 
     def obtener_representacion_pila(self):
@@ -116,17 +118,14 @@ class AnalizadorSintactico:
         return " ".join(simbolos_restantes)
 
     def obtener_nombre_no_terminal(self, codigo_no_terminal):
-        """Obtiene el nombre descriptivo del no terminal"""
         return self.diccionario_no_terminales.get(codigo_no_terminal, f"NoTerminal{codigo_no_terminal}")
 
     def imprimir_encabezado_tabla(self):
-        """Imprime el encabezado de la tabla de análisis"""
         print("\n" + "="*80)
         print("                     ANÁLISIS SINTÁCTICO LR(1)")
         print("="*80)
 
     def imprimir_paso_analisis(self, accion_descripcion):
-        """Imprime un paso del análisis en formato de bloques"""
         self.numero_paso += 1
         
         simbolo_actual = self.cadena_simbolos[self.indice_lectura]
@@ -139,7 +138,7 @@ class AnalizadorSintactico:
         print(f"    OBJETIVO: {simbolo_actual} (token: {token_actual})")
         print(f"    ACCIÓN:     {accion_descripcion}")
 
-    def analizar(self):
+    def analizar(self, nombre_salida_arbol='arbol_sintactico', formato_salida='png'):
         self.imprimir_encabezado_tabla()
 
         while True:
@@ -169,7 +168,7 @@ class AnalizadorSintactico:
                 print("="*80)
                 return False
 
-            # Caso: Desplazamiento (shift)
+            # Caso: Desplazamiento
             elif accion > 0:
                 estado_destino = accion
                 descripcion_accion = f"🔄 DESPLAZAMIENTO → S{estado_destino}"
@@ -179,14 +178,30 @@ class AnalizadorSintactico:
                 self.pila_estados.push(Terminal(simbolo_actual))
                 self.pila_estados.push(Estado(estado_destino))
                 self.indice_lectura += 1
+
+                # En la pila semántica guardamos el nodo terminal correspondiente
+                nodo_terminal = Nodo(etiqueta=f"T_{token_actual}", simbolo_lexico=simbolo_actual)
+                self.pila_semantica.push(nodo_terminal)
                 continue
 
             # Caso: Aceptación
             elif accion == -1:
                 self.imprimir_paso_analisis("✅ ACEPTAR")
                 print("="*80)
-                print(f"\ANÁLISIS COMPLETADO")
+                print("\nANÁLISIS COMPLETADO")
                 print("La cadena de entrada ES SINTÁCTICAMENTE VÁLIDA")
+    
+                if self.pila_semantica.is_empty():
+                    print("La pila semántica está vacía — no se construyó árbol")
+                    return True
+                
+                # Raíz esperada en la pila semántica
+                raiz = self.pila_semantica.top()
+                try:
+                    exportar_arbol_pyvis(raiz, nombre_salida='arbol_interactivo.html')
+
+                except Exception as e:
+                    print(f"No se pudo generar HTML interactivo con pyvis: {e}")
                 return True
 
             # Caso: Reducción
@@ -206,6 +221,18 @@ class AnalizadorSintactico:
                 # Imprimir detalles ANTES de hacer la reducción
                 print(f"            *Regla aplicada: R{numero_regla} → {nombre_lado_izquierdo}({lado_izquierdo})")
                 print(f"            *Elementos a eliminar: {cantidad_simbolos_derecha * 2} (símbolos y estados)")
+
+                # Recolectar nodos semánticos ANTES de eliminar de la pila de estados
+                hijos = []
+                if cantidad_simbolos_derecha > 0:
+                    # extraer en orden izquierdo a derecho: como la pila guarda en orden, extraemos en reversa y luego invertimos
+                    for _ in range(cantidad_simbolos_derecha):
+                        if self.pila_semantica.is_empty():
+                            print(f"❌ ERROR: Intentando hacer pop en pila semántica vacía durante reducción")
+                            return False
+                        hijos.append(self.pila_semantica.pop())
+                    # invertir una vez para obtener orden izquierdo->derecho
+                    hijos.reverse()
 
                 # Realizar reducción: eliminar 2 * cantidad_simbolos_derecha elementos
                 for _ in range(2 * cantidad_simbolos_derecha):
@@ -232,9 +259,22 @@ class AnalizadorSintactico:
                 if nuevo_estado == 0:
                     print(f"\n❌ ERROR: GOTO indefinido para {nombre_lado_izquierdo} desde estado {estado_anterior}")
                     return False
+                
+                # Crear nuevo nodo no-terminal y agregar los hijos recolectados
+                nodo_nt = Nodo(etiqueta=nombre_lado_izquierdo)
+                for h in hijos:
+                    nodo_nt.agregar_hijo(h)
+                
+                # Si la producción fue epsilon (cant_rhs == 0), crear un hijo ε
+                if cantidad_simbolos_derecha == 0:
+                    nodo_nt.agregar_hijo(Nodo(etiqueta='ε'))
+
+                # Apilar el nodo resultante en la pila semántica
+                self.pila_semantica.push(nodo_nt)
 
                 # Apilar el no terminal y el nuevo estado
                 self.pila_estados.push(NoTerminal(nombre_lado_izquierdo))
                 self.pila_estados.push(Estado(nuevo_estado))
                 
                 print(f"            * GOTO: Apilando '{nombre_lado_izquierdo}' y S{nuevo_estado}")
+                print(f" * Nodo creado: {nodo_nt}")
