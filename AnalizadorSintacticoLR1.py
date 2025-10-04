@@ -138,7 +138,7 @@ class AnalizadorSintactico:
         print(f"    OBJETIVO: {simbolo_actual} (token: {token_actual})")
         print(f"    ACCIÓN:     {accion_descripcion}")
 
-    def analizar(self, nombre_salida_arbol='arbol_sintactico', formato_salida='png'):
+    def analizar(self):
         self.imprimir_encabezado_tabla()
 
         while True:
@@ -198,8 +198,9 @@ class AnalizadorSintactico:
                 # Raíz esperada en la pila semántica
                 raiz = self.pila_semantica.top()
                 try:
-                    exportar_arbol_pyvis(raiz, nombre_salida='arbol_interactivo.html')
-
+                    nombre_salida='arbol_interactivo.html'
+                    exportar_arbol_pyvis(raiz, nombre_salida)
+                    print(f"ÁRBOL SINTÁCTICO GENERADO EN: {nombre_salida}")
                 except Exception as e:
                     print(f"No se pudo generar HTML interactivo con pyvis: {e}")
                 return True
