@@ -16,66 +16,60 @@ class Nodo:
         return f"{self.etiqueta}"
 
 def obtener_color_nodo(etiqueta):
-    """
-    Determina el color del nodo según el NO TERMINAL (regla gramatical):
-    """
     colores_no_terminales = {
         # Estructura principal del programa
-        'programa': '#FF6B6B',           # Rojo coral
-        'Definiciones': '#4ECDC4',       # Turquesa
-        'Definicion': '#45B7D1',         # Azul cielo
+        'programa': '#FF6B6B',          
+        'Definiciones': '#4ECDC4',       
+        'Definicion': '#45B7D1',         
         
         # Definiciones de variables
-        'DefVar': '#96CEB4',             # Verde menta
-        'ListaVar': '#A8E6CF',           # Verde claro
+        'DefVar': '#96CEB4',             
+        'ListaVar': '#A8E6CF',           
         
         # Definiciones de funciones
-        'DefFunc': '#FFD93D',            # Amarillo
-        'Parametros': '#FFA07A',         # Salmón
-        'ListaParam': '#FFDAB9',         # Durazno
-        'BloqFunc': '#F4A460',           # Naranja arena
+        'DefFunc': '#FFD93D',            
+        'Parametros': '#FFA07A',         
+        'ListaParam': '#FFDAB9',         
+        'BloqFunc': '#F4A460',          
         
         # Definiciones locales
-        'DefLocales': '#DDA0DD',         # Ciruela
-        'DefLocal': '#E6B0E6',           # Orquídea
+        'DefLocales': '#DDA0DD',        
+        'DefLocal': '#E6B0E6',           
         
         # Sentencias
-        'Sentencias': '#87CEEB',         # Azul cielo claro
-        'Sentencia': '#6495ED',          # Azul aciano
-        'SentenciaBloque': '#4169E1',    # Azul real
-        'Bloque': '#1E90FF',             # Azul dodger
+        'Sentencias': '#87CEEB',         
+        'Sentencia': '#6495ED',          
+        'SentenciaBloque': '#4169E1',    
+        'Bloque': '#1E90FF',             
         
         # Estructuras de control
-        'Otro': '#BA55D3',               # Orquídea medio
-        'ValorRegresa': '#9370DB',       # Púrpura medio
+        'Otro': '#BA55D3',               
+        'ValorRegresa': '#9370DB',       
         
         # Expresiones y términos
-        'Expresion': '#FF69B4',          # Rosa fuerte
-        'Termino': '#FFB6C1',            # Rosa claro
+        'Expresion': '#FF69B4',          
+        'Termino': '#FFB6C1',            
         
         # Llamadas a funciones y argumentos
-        'LlamadaFunc': '#FFA500',        # Naranja
-        'Argumentos': '#FFD700',         # Dorado
-        'ListaArgumentos': '#F0E68C',    # Caqui
+        'LlamadaFunc': '#FFA500',        
+        'Argumentos': '#FFD700',         
+        'ListaArgumentos': '#F0E68C',   
         
         # Epsilon
-        'ε': '#CCCCCC'                   # Gris
+        'ε': '#CCCCCC'                  
     }
     
-    # Si es un terminal (empieza con T_), color verde
     if etiqueta.startswith('T_'):
-        return '#90EE90'  # Verde claro para terminales
+        return '#90EE90'
     
-    # Retornar color según el no terminal
-    return colores_no_terminales.get(etiqueta, '#97C2FC')  # Azul por defecto
+    return colores_no_terminales.get(etiqueta, '#97C2FC')  
 
 def exportar_arbol_pyvis(raiz, nombre_salida='arbol_interactivo.html'):
     """
     Genera un árbol interactivo con pyvis a partir de la raíz tipo Nodo.
-    Colores según el NO TERMINAL (regla gramatical).
     """
     G = nx.DiGraph()
-    info_nodos = {}  # Guardará (etiqueta, simbolo_lexico, color)
+    info_nodos = {}
     contador = {'n': 0}
 
     def agregar_nodo(nodo, padre=None):
@@ -115,7 +109,6 @@ def exportar_arbol_pyvis(raiz, nombre_salida='arbol_interactivo.html'):
         n['color'] = info['color']
         n['size'] = 25
         
-        # Agregar título (tooltip) con información adicional
         if info['simbolo']:
             n['title'] = f"Regla: {info['etiqueta']}\nValor: {info['simbolo']}"
         else:

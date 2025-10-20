@@ -42,7 +42,6 @@ class AnalizadorSintactico:
             45: "Expresion"
         }
 
-        # Diccionario de reglas de producción (lado izquierdo, cantidad_simbolos_derecha)
         self.reglas_gramatica = {
             1:  (24, 1),  # programa -> Definiciones
             2:  (25, 0),  # Definiciones -> ε
@@ -113,7 +112,6 @@ class AnalizadorSintactico:
         return "[" + " ".join(elementos_pila) + "]"
 
     def obtener_entrada_restante(self):
-        """Entrada desde el índice actual hasta el final"""
         simbolos_restantes = self.cadena_simbolos[self.indice_lectura:]
         return " ".join(simbolos_restantes)
 
@@ -142,10 +140,9 @@ class AnalizadorSintactico:
         self.imprimir_encabezado_tabla()
 
         while True:
-            # Verificar que la cima de la pila sea un Estado
             elemento_cima = self.pila_estados.top()
             if not isinstance(elemento_cima, Estado):
-                print(f"\n❌ ERROR INTERNO: la cima de la pila no es un Estado: {type(elemento_cima)}")
+                print(f"\n ERROR: la cima de la pila no es un Estado: {type(elemento_cima)}")
                 return False
             
             estado_actual = elemento_cima.valor
@@ -155,12 +152,12 @@ class AnalizadorSintactico:
             try:
                 accion = self.matriz_acciones.consultar(estado_actual, token_actual)
             except IndexError as e:
-                print(f"\n❌ ERROR: No se puede consultar matriz en posición ({estado_actual}, {token_actual}): {e}")
+                print(f"\n ERROR: No se puede consultar matriz en posición ({estado_actual}, {token_actual}): {e}")
                 return False
 
             # Caso: Error sintáctico
             if accion == 0:
-                self.imprimir_paso_analisis("❌ ERROR SINTÁCTICO")
+                self.imprimir_paso_analisis("ERROR SINTÁCTICO")
                 print(f"\n DETALLES DEL ERROR:")
                 print(f"        Estado actual: S{estado_actual}")
                 print(f"        Token inesperado: '{simbolo_actual}' (tipo: {token_actual})")
@@ -168,7 +165,7 @@ class AnalizadorSintactico:
                 print("="*80)
                 return False
 
-            # Caso: Desplazamiento
+            #Desplazamiento
             elif accion > 0:
                 estado_destino = accion
                 descripcion_accion = f"🔄 DESPLAZAMIENTO → S{estado_destino}"
@@ -179,7 +176,6 @@ class AnalizadorSintactico:
                 self.pila_estados.push(Estado(estado_destino))
                 self.indice_lectura += 1
 
-                # En la pila semántica guardamos el nodo terminal correspondiente
                 nodo_terminal = Nodo(etiqueta=f"T_{token_actual}", simbolo_lexico=simbolo_actual)
                 self.pila_semantica.push(nodo_terminal)
                 continue
@@ -195,7 +191,6 @@ class AnalizadorSintactico:
                     print("La pila semántica está vacía — no se construyó árbol")
                     return True
                 
-                # Raíz esperada en la pila semántica
                 raiz = self.pila_semantica.top()
                 try:
                     nombre_salida='arbol_interactivo.html'
@@ -210,7 +205,7 @@ class AnalizadorSintactico:
                 numero_regla = -accion - 1
                 
                 if numero_regla not in self.reglas_gramatica:
-                    print(f"\n❌ ERROR: Regla de reducción {numero_regla} no existe")
+                    print(f"\nERROR: Regla de reducción {numero_regla} no existe")
                     return False
                 
                 lado_izquierdo, cantidad_simbolos_derecha = self.reglas_gramatica[numero_regla]
@@ -219,20 +214,18 @@ class AnalizadorSintactico:
                 descripcion_accion = f"🔽 REDUCIR R{numero_regla}"
                 self.imprimir_paso_analisis(descripcion_accion)
                 
-                # Imprimir detalles ANTES de hacer la reducción
                 print(f"            *Regla aplicada: R{numero_regla} → {nombre_lado_izquierdo}({lado_izquierdo})")
                 print(f"            *Elementos a eliminar: {cantidad_simbolos_derecha * 2} (símbolos y estados)")
 
                 # Recolectar nodos semánticos ANTES de eliminar de la pila de estados
                 hijos = []
                 if cantidad_simbolos_derecha > 0:
-                    # extraer en orden izquierdo a derecho: como la pila guarda en orden, extraemos en reversa y luego invertimos
+                    # extraer en orden izquierdo a derecho: extraemos en reversa y luego invertimos
                     for _ in range(cantidad_simbolos_derecha):
                         if self.pila_semantica.is_empty():
                             print(f"❌ ERROR: Intentando hacer pop en pila semántica vacía durante reducción")
                             return False
                         hijos.append(self.pila_semantica.pop())
-                    # invertir una vez para obtener orden izquierdo->derecho
                     hijos.reverse()
 
                 # Realizar reducción: eliminar 2 * cantidad_simbolos_derecha elementos
@@ -242,7 +235,6 @@ class AnalizadorSintactico:
                         return False
                     self.pila_estados.pop()
 
-                # Obtener el nuevo estado actual DESPUÉS de la reducción
                 if self.pila_estados.is_empty():
                     print(f"\n❌ ERROR: Pila vacía después de la reducción")
                     return False
@@ -250,7 +242,6 @@ class AnalizadorSintactico:
                 estado_anterior = self.pila_estados.top().valor
                 print(f"            *Estado tras reducir: S{estado_anterior}")
 
-                # Consultar matriz
                 try:
                     nuevo_estado = self.matriz_acciones.consultar(estado_anterior, lado_izquierdo)
                 except IndexError as e:
@@ -266,11 +257,9 @@ class AnalizadorSintactico:
                 for h in hijos:
                     nodo_nt.agregar_hijo(h)
                 
-                # Si la producción fue epsilon (cant_rhs == 0), crear un hijo ε
                 if cantidad_simbolos_derecha == 0:
                     nodo_nt.agregar_hijo(Nodo(etiqueta='ε'))
 
-                # Apilar el nodo resultante en la pila semántica
                 self.pila_semantica.push(nodo_nt)
 
                 # Apilar el no terminal y el nuevo estado
