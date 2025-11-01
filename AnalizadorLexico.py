@@ -27,6 +27,7 @@ class AnalizadorLexico:
             ([A-Za-z][A-Za-z0-9]*) |  # Identificadores y palabras reservadas
             (\d+\.\d+) |              # Números reales
             (\d+) |                   # Números enteros
+            ("(?:[^"\\]|\\.)*") |     # Cadenas de texto
             ([+\-]) |                 # Operadores de suma
             ([*/]) |                  # Operadores de multiplicación
             ([<>]) |                  # Operadores relacionales simples
@@ -77,58 +78,62 @@ class AnalizadorLexico:
             elif grupos[5]:  # Número entero
                 self.tokens.append(1)
                 self.simbolos.append(grupos[5])
-
-            elif grupos[6]:  # Operadores de suma
-                self.tokens.append(5)
-                self.simbolos.append(grupos[6])
                 
-            elif grupos[7]:  # Operadores de multiplicación
-                self.tokens.append(6)
+            elif grupos[6]:  # Cadena de texto
+                self.tokens.append(3)
+                self.simbolos.append(grupos[6])
+
+            elif grupos[7]:  # Operadores de suma
+                self.tokens.append(5)
                 self.simbolos.append(grupos[7])
                 
-            elif grupos[8]:  # Operadores relacionales simples
-                self.tokens.append(7)
+            elif grupos[8]:  # Operadores de multiplicación
+                self.tokens.append(6)
                 self.simbolos.append(grupos[8])
                 
-            elif grupos[9]:  # Operador Not
-                self.tokens.append(10)
+            elif grupos[9]:  # Operadores relacionales simples
+                self.tokens.append(7)
                 self.simbolos.append(grupos[9])
-
-            elif grupos[10]:  # Operador de asignación
-                self.tokens.append(18)
+                
+            elif grupos[10]:  # Operador Not
+                self.tokens.append(10)
                 self.simbolos.append(grupos[10])
 
-            elif grupos[11]:  # Punto y coma
-                self.tokens.append(12)
+            elif grupos[11]:  # Operador de asignación
+                self.tokens.append(18)
                 self.simbolos.append(grupos[11])
 
-            elif grupos[12]:  # Coma
-                self.tokens.append(13)
+            elif grupos[12]:  # Punto y coma
+                self.tokens.append(12)
                 self.simbolos.append(grupos[12])
-                
-            elif grupos[13]:  # Paréntesis izquierdo
-                self.tokens.append(14)
-                self.simbolos.append(grupos[13])
 
-            elif grupos[14]:  # Paréntesis derecho
-                self.tokens.append(15)
+            elif grupos[13]:  # Coma
+                self.tokens.append(13)
+                self.simbolos.append(grupos[13])
+                
+            elif grupos[14]:  # Paréntesis izquierdo
+                self.tokens.append(14)
                 self.simbolos.append(grupos[14])
 
-            elif grupos[15]:  # Llave izquierda
-                self.tokens.append(16)
+            elif grupos[15]:  # Paréntesis derecho
+                self.tokens.append(15)
                 self.simbolos.append(grupos[15])
 
-            elif grupos[16]:  # Llave derecha
-                self.tokens.append(17)
+            elif grupos[16]:  # Llave izquierda
+                self.tokens.append(16)
                 self.simbolos.append(grupos[16])
 
-            elif grupos[17]:  # Símbolo $
-                self.tokens.append(23)
+            elif grupos[17]:  # Llave derecha
+                self.tokens.append(17)
                 self.simbolos.append(grupos[17])
-                
-            elif grupos[18] and not grupos[18].isspace():  # Error
+
+            elif grupos[18]:  # Símbolo $
+                self.tokens.append(23)
                 self.simbolos.append(grupos[18])
-                self.error ="ERROR LÉXICO: " + grupos[18]
+                
+            elif grupos[19] and not grupos[19].isspace():  # Error
+                self.simbolos.append(grupos[19])
+                self.error = "ERROR LÉXICO: " + grupos[19]
                 self.tokens.clear()
 
     def ver_token(self, pos=None):
@@ -149,19 +154,3 @@ class AnalizadorLexico:
     
     def siguiente_posicion(self):
         self.pos += 1
-
-# Ejemplos de prueba
-if __name__ == "__main__":
-    cadena = """ x = 5;
-            y = 20;
-            if (x == y || z > 0){ 
-                a = !b; 
-            }
-        """
-    analizador = AnalizadorLexico(cadena)
-    
-    if not analizador.error:
-        print("CADENA: ",cadena)
-        print(analizador.obtener_todos_tokens())
-    else:
-        print(analizador.error)
