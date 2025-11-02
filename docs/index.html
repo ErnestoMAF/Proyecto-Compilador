@@ -247,27 +247,6 @@
             word-wrap: break-word;
         }
 
-        .config-section {
-            background: #f0f0f0;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .config-section label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .config-section input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
         .full-width {
             grid-column: 1 / -1;
         }
@@ -282,36 +261,19 @@
 
         <div class="input-section">
             <h2>📝 Código Fuente</h2>
-            <textarea id="sourceCode" placeholder="Ingresa tu código aquí...
+            <textarea id="sourceCode" placeholder="Ingresa tu código aquí...">int a;
 
-Ejemplo:
+int suma(int a, int b){
+    return a+b;
+}
+
 int main(){
-    int a;
-    int suma(int a, int b){
-        return a+b;
-    }
-
-    int main(){
-        float a;
-        int b;
-        int c;
-        c = a+b;
-        c = suma(8,9);
-    }
-}"> int a;
-    int suma(int a, int b){
-        return a+b;
-    }
-
-    int main(){
-        float a;
-        int b;
-        int c;
-        c = a+b;
-        c = suma(8,9);
-    }</textarea>
-
-
+    float c;
+    int d;
+    int e;
+    e = d + 10;
+    e = suma(8, 9);
+}</textarea>
 
             <div class="button-group">
                 <button class="btn-primary" onclick="compilar()">
@@ -576,20 +538,12 @@ int main(){
         }
 
         function cargarEjemplo() {
-            const ejemplo = `
-                int a;
-                int suma(int a, int b){
-                return a+b;
-                }
-
-                int main(){
-                float a;
-                int b;
-                int c;
-                c = a+b;
-                c = suma(8,9);
-                }
-            
+            const ejemplo = `int main(){
+    int a;
+    int b;
+    a = 5;
+    b = 10;
+    a = a + b;
 }`;
             document.getElementById('sourceCode').value = ejemplo;
         }
