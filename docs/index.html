@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compilador LR(1) - Análisis Completo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .input-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .result-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5em;
+        }
+
+        .result-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .token-list, .symbol-table, .code-output {
+            list-style: none;
+        }
+
+        .token-item {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background: white;
+            border-left: 3px solid #667eea;
+            border-radius: 5px;
+        }
+
+        .error {
+            background: #fee;
+            border-left-color: #f44336;
+            color: #d32f2f;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .success {
+            background: #e8f5e9;
+            border-left: 3px solid #4caf50;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .tree-container {
+            width: 100%;
+            min-height: 600px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .step-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 3px solid #764ba2;
+        }
+
+        .step-number {
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .config-section {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .config-section label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .config-section input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Compilador LR(1)</h1>
+            <p>Análisis Léxico, Sintáctico, Semántico y Generación de Código NASM</p>
+        </div>
+
+        <div class="input-section">
+            <h2>📝 Código Fuente</h2>
+            <textarea id="sourceCode" placeholder="Ingresa tu código aquí...
+
+Ejemplo:
+int main(){
+    int a;
+    a = 5;
+    a = a + 5;
+}">int main(){
+    int a;
+    a = 5;
+    a = a + 5;
+}</textarea>
+
+            <div class="config-section">
+                <label for="apiUrl">🔗 URL del API Backend (Render):</label>
+                <input type="text" id="apiUrl" value="https://tu-app.onrender.com" placeholder="https://tu-compilador-api.onrender.com">
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="compilar()">
+                    ▶️ Compilar
+                </button>
+                <button class="btn-secondary" onclick="limpiar()">
+                    🗑️ Limpiar
+                </button>
+                <button class="btn-secondary" onclick="cargarEjemplo()">
+                    📄 Cargar Ejemplo
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Procesando código...</p>
+            </div>
+        </div>
+
+        <div class="results-grid" id="resultsGrid" style="display: none;">
+            <!-- Análisis Léxico -->
+            <div class="result-card">
+                <h3>🔤 Análisis Léxico</h3>
+                <div class="result-content" id="lexicoResult"></div>
+            </div>
+
+            <!-- Análisis Sintáctico -->
+            <div class="result-card">
+                <h3>📊 Análisis Sintáctico</h3>
+                <div class="result-content" id="sintacticoResult"></div>
+            </div>
+
+            <!-- Árbol Sintáctico -->
+            <div class="result-card full-width">
+                <h3>🌳 Árbol Sintáctico</h3>
+                <div class="tree-container" id="treeContainer">
+                    <p>El árbol sintáctico se mostrará aquí...</p>
+                </div>
+            </div>
+
+            <!-- Análisis Semántico -->
+            <div class="result-card">
+                <h3>🔍 Análisis Semántico</h3>
+                <div class="result-content" id="semanticoResult"></div>
+            </div>
+
+            <!-- Código Generado -->
+            <div class="result-card">
+                <h3>⚙️ Código NASM Generado</h3>
+                <div class="result-content" id="codigoResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let apiBaseUrl = '';
+
+        function getApiUrl() {
+            const input = document.getElementById('apiUrl');
+            apiBaseUrl = input.value.trim();
+            if (!apiBaseUrl.startsWith('http')) {
+                apiBaseUrl = 'https://' + apiBaseUrl;
+            }
+            if (apiBaseUrl.endsWith('/')) {
+                apiBaseUrl = apiBaseUrl.slice(0, -1);
+            }
+            return apiBaseUrl;
+        }
+
+        async function compilar() {
+            const sourceCode = document.getElementById('sourceCode').value;
+            const loading = document.getElementById('loading');
+            const resultsGrid = document.getElementById('resultsGrid');
+
+            if (!sourceCode.trim()) {
+                alert('Por favor ingresa código fuente');
+                return;
+            }
+
+            loading.classList.add('active');
+            resultsGrid.style.display = 'none';
+
+            try {
+                const baseUrl = getApiUrl();
+                
+                // Análisis Léxico
+                const lexicoResponse = await fetch(`${baseUrl}/api/lexico`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ codigo: sourceCode })
+                });
+                const lexicoData = await lexicoResponse.json();
+                mostrarLexico(lexicoData);
+
+                if (lexicoData.error) {
+                    throw new Error(lexicoData.error);
+                }
+
+                // Análisis Sintáctico
+                const sintacticoResponse = await fetch(`${baseUrl}/api/sintactico`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        tokens: lexicoData.tokens,
+                        simbolos: lexicoData.simbolos 
+                    })
+                });
+                const sintacticoData = await sintacticoResponse.json();
+                mostrarSintactico(sintacticoData);
+
+                if (sintacticoData.error) {
+                    throw new Error(sintacticoData.error);
+                }
+
+                // Árbol Sintáctico
+                mostrarArbol(sintacticoData.arbol_html);
+
+                // Análisis Semántico
+                const semanticoResponse = await fetch(`${baseUrl}/api/semantico`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ arbol: sintacticoData.arbol })
+                });
+                const semanticoData = await semanticoResponse.json();
+                mostrarSemantico(semanticoData);
+
+                if (semanticoData.errores && semanticoData.errores.length > 0) {
+                    throw new Error('Errores semánticos encontrados');
+                }
+
+                // Generación de Código
+                const codigoResponse = await fetch(`${baseUrl}/api/generar-codigo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        arbol: sintacticoData.arbol,
+                        tabla_simbolos: semanticoData.tabla_simbolos
+                    })
+                });
+                const codigoData = await codigoResponse.json();
+                mostrarCodigo(codigoData);
+
+                resultsGrid.style.display = 'grid';
+            } catch (error) {
+                alert('Error durante la compilación: ' + error.message);
+                console.error(error);
+            } finally {
+                loading.classList.remove('active');
+            }
+        }
+
+        function mostrarLexico(data) {
+            const container = document.getElementById('lexicoResult');
+            
+            if (data.error) {
+                container.innerHTML = `<div class="error">${data.error}</div>`;
+                return;
+            }
+
+            let html = `<div class="success">✅ ${data.tokens.length} tokens identificados</div><ul class="token-list">`;
+            
+            for (let i = 0; i < data.tokens.length; i++) {
+                html += `<li class="token-item">
+                    <span class="step-number">${i + 1}.</span>
+                    Token: <strong>${data.tokens[i]}</strong> → '${data.simbolos[i]}'
+                </li>`;
+            }
+            
+            html += '</ul>';
+            container.innerHTML = html;
+        }
+
+        function mostrarSintactico(data) {
+            const container = document.getElementById('sintacticoResult');
+            
+            if (data.error) {
+                container.innerHTML = `<div class="error">${data.error}</div>`;
+                return;
+            }
+
+            let html = `<div class="success">✅ Análisis sintáctico completado (${data.pasos.length} pasos)</div>`;
+            
+            data.pasos.forEach((paso, index) => {
+                html += `<div class="step-item">
+                    <span class="step-number">Paso ${index + 1}:</span>
+                    <pre>${paso}</pre>
+                </div>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function mostrarArbol(htmlContent) {
+            const container = document.getElementById('treeContainer');
+            
+            if (htmlContent) {
+                // Crear un iframe para mostrar el HTML del árbol
+                container.innerHTML = `<iframe srcdoc="${htmlContent.replace(/"/g, '&quot;')}"></iframe>`;
+            } else {
+                container.innerHTML = '<p class="error">No se pudo generar el árbol sintáctico</p>';
+            }
+        }
+
+        function mostrarSemantico(data) {
+            const container = document.getElementById('semanticoResult');
+            
+            let html = '';
+
+            if (data.errores && data.errores.length > 0) {
+                html += '<div class="error"><strong>❌ Errores Semánticos:</strong><ul>';
+                data.errores.forEach(error => {
+                    html += `<li>${error}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            if (data.advertencias && data.advertencias.length > 0) {
+                html += '<div style="background: #fff3cd; border-left: 3px solid #ffc107; padding: 15px; border-radius: 8px; margin-top: 10px;"><strong>⚠️ Advertencias:</strong><ul>';
+                data.advertencias.forEach(adv => {
+                    html += `<li>${adv}</li>`;
+                });
+                html += '</ul></div>';
+            }
+
+            if ((!data.errores || data.errores.length === 0) && (!data.advertencias || data.advertencias.length === 0)) {
+                html += '<div class="success">✅ No se encontraron errores semánticos</div>';
+            }
+
+            // Tabla de símbolos
+            if (data.tabla_simbolos) {
+                html += '<h4 style="margin-top: 20px; color: #667eea;">📋 Tabla de Símbolos:</h4>';
+                html += '<ul class="symbol-table">';
+                
+                for (const [nombre, simbolos] of Object.entries(data.tabla_simbolos)) {
+                    simbolos.forEach(simbolo => {
+                        html += `<li class="token-item">
+                            <strong>${simbolo.nombre}</strong> 
+                            [${simbolo.tipo}] - ${simbolo.categoria} 
+                            (Ámbito: ${simbolo.ambito})
+                        </li>`;
+                    });
+                }
+                
+                html += '</ul>';
+            }
+
+            container.innerHTML = html;
+        }
+
+        function mostrarCodigo(data) {
+            const container = document.getElementById('codigoResult');
+            
+            if (data.error) {
+                container.innerHTML = `<div class="error">${data.error}</div>`;
+                return;
+            }
+
+            let html = '<div class="success">✅ Código NASM generado exitosamente</div>';
+            html += '<pre class="code-output">' + data.codigo + '</pre>';
+            
+            container.innerHTML = html;
+        }
+
+        function limpiar() {
+            document.getElementById('sourceCode').value = '';
+            document.getElementById('resultsGrid').style.display = 'none';
+        }
+
+        function cargarEjemplo() {
+            const ejemplo = `int main(){
+    int a;
+    int b;
+    a = 5;
+    b = 10;
+    a = a + b;
+}`;
+            document.getElementById('sourceCode').value = ejemplo;
+        }
+    </script>
+</body>
+</html>
