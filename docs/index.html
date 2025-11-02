@@ -287,10 +287,7 @@ int main(){
     a = a + 5;
 }</textarea>
 
-            <div class="config-section">
-                <label for="apiUrl">🔗 URL del API Backend (Render):</label>
-                <input type="text" id="apiUrl" value="https://tu-app.onrender.com" placeholder="https://tu-compilador-api.onrender.com">
-            </div>
+
 
             <div class="button-group">
                 <button class="btn-primary" onclick="compilar()">
@@ -346,18 +343,11 @@ int main(){
     </div>
 
     <script>
-        let apiBaseUrl = '';
+        // URL del backend hardcodeada
+        const API_BASE_URL = 'https://proyecto-compilador-services.onrender.com';
 
         function getApiUrl() {
-            const input = document.getElementById('apiUrl');
-            apiBaseUrl = input.value.trim();
-            if (!apiBaseUrl.startsWith('http')) {
-                apiBaseUrl = 'https://' + apiBaseUrl;
-            }
-            if (apiBaseUrl.endsWith('/')) {
-                apiBaseUrl = apiBaseUrl.slice(0, -1);
-            }
-            return apiBaseUrl;
+            return API_BASE_URL;
         }
 
         async function compilar() {
