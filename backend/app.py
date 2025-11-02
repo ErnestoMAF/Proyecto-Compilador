@@ -122,7 +122,7 @@ def analisis_sintactico():
         if not resultado:
             return jsonify({
                 'error': 'Error sintáctico detectado',
-                'pasos': output.split('\n'),
+                'pasos': [output], 
                 'exito': False
             })
         
@@ -142,9 +142,22 @@ def analisis_sintactico():
             except Exception as e:
                 print(f"No se pudo generar HTML del árbol: {e}")
         
+        # Procesar pasos: dividir por "📍 PASO"
+        pasos_list = []
+        if '📍 PASO' in output:
+            # Dividir por el marcador de paso
+            partes = output.split('📍 PASO')
+            # Saltar la primera parte (encabezado)
+            for i, parte in enumerate(partes[1:], 1):
+                paso = f'📍 PASO{parte}'.strip()
+                if paso:
+                    pasos_list.append(paso)
+        else:
+            pasos_list = [output]
+        
         return jsonify({
             'exito': True,
-            'pasos': output.split('\n'),
+            'pasos': pasos_list,
             'arbol': arbol_serializado,
             'arbol_html': arbol_html
         })
