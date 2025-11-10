@@ -6,12 +6,19 @@ from GeneradorCodigo import *
 
 if __name__ == "__main__":
     #cadena = input("Dame la cadena: ")
-    cadena = """   
-            int main(){
+    cadena = """
                 int a;
-                a = 5;
-                a = a + 5;
-            }
+                int suma(int a, int b){
+                return a+b;
+                }
+
+                int main(){
+                float a;
+                int b;
+                int c;
+                c = a+b;
+                c = suma(8,9);
+                }
             """
     print(f"CADENA: {cadena}")
     analizador_lexico = AnalizadorLexico(cadena)
